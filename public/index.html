@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hellio HR - Candidate Management</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Hellio HR</h1>
+            <p class="tagline">Intelligent Hiring Operations Assistant</p>
+        </div>
+    </header>
+
+    <nav class="main-nav">
+        <div class="container">
+            <button class="nav-btn active" data-view="candidates">Candidates</button>
+            <button class="nav-btn" data-view="positions">Positions</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Candidates View -->
+        <section id="candidates-view" class="view active">
+            <!-- Search and Filter -->
+            <div class="controls">
+                <input type="text" id="candidate-search" placeholder="Search candidates by name, skills, or location...">
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <select id="candidate-status-filter">
+                        <option value="all">All</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <button id="compare-btn" class="secondary-btn" disabled>Compare Selected</button>
+            </div>
+
+            <!-- Candidate List -->
+            <div id="candidate-list" class="card-grid"></div>
+
+            <!-- Candidate Profile Detail -->
+            <div id="candidate-profile" class="profile-detail" style="display: none;">
+                <button id="back-to-list-btn" class="secondary-btn">← Back to List</button>
+                <div id="profile-content"></div>
+            </div>
+
+            <!-- Comparison View -->
+            <div id="comparison-view" class="comparison-view" style="display: none;">
+                <button id="back-to-list-from-compare" class="secondary-btn">← Back to List</button>
+                <h2>Candidate Comparison</h2>
+                <div id="comparison-content" class="comparison-grid"></div>
+            </div>
+        </section>
+
+        <!-- Positions View -->
+        <section id="positions-view" class="view">
+            <!-- Search and Filter -->
+            <div class="controls">
+                <input type="text" id="position-search" placeholder="Search positions by title, skills, or company...">
+                <div class="filter-group">
+                    <label>Urgency:</label>
+                    <select id="position-urgency-filter">
+                        <option value="all">All</option>
+                        <option value="Critical">Critical</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Position List -->
+            <div id="position-list" class="card-grid"></div>
+
+            <!-- Position Detail -->
+            <div id="position-detail" class="profile-detail" style="display: none;">
+                <button id="back-to-positions-btn" class="secondary-btn">← Back to Positions</button>
+                <div id="position-content"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Hellio HR &copy; 2026 | Built by Max | Develeap Agenteer Boot Camp</p>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

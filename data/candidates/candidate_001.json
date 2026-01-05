@@ -1,0 +1,91 @@
+{
+  "id": "candidate_001",
+  "status": "Active",
+  "personalInfo": {
+    "firstName": "Aarav",
+    "lastName": "Hayes",
+    "email": "aarav.hayes@email.com",
+    "phone": "060-4281563",
+    "location": "Be'er Sheva, Israel",
+    "linkedin": "linkedin.com/in/aarav-hayes",
+    "github": "github.com/aaravhayes"
+  },
+  "summary": "Motivated Junior DevOps Engineer with 1.5 years of experience in cloud infrastructure and automation. Recently completed DevOps bootcamp and eager to apply CI/CD best practices in production environments. Strong foundation in Linux administration, containerization, and infrastructure as code. Quick learner with a passion for automation and continuous improvement.",
+  "skills": [
+    "Git",
+    "Kubernetes",
+    "GitHub Actions",
+    "Jenkins",
+    "ECS",
+    "AWS",
+    "Docker",
+    "Bash",
+    "Python",
+    "Linux"
+  ],
+  "languages": [
+    {
+      "language": "Hebrew",
+      "proficiency": "Native"
+    },
+    {
+      "language": "English",
+      "proficiency": "Native"
+    }
+  ],
+  "experience": [
+    {
+      "title": "Junior DevOps Engineer",
+      "company": "Company 328",
+      "location": "Tel Aviv",
+      "startDate": "2023",
+      "endDate": "Present",
+      "current": true,
+      "responsibilities": [
+        "Maintain and monitor AWS infrastructure for 3 client applications",
+        "Write Bash and Python scripts to automate deployment tasks",
+        "Assist in managing Docker containers and basic Kubernetes deployments",
+        "Configure Jenkins pipelines for automated testing and deployment",
+        "Troubleshoot Linux server issues and perform routine maintenance",
+        "Document deployment procedures and runbooks"
+      ]
+    },
+    {
+      "title": "IT Support Technician",
+      "company": "Company 396",
+      "location": "Herzliya",
+      "startDate": "2021",
+      "endDate": "2023",
+      "current": false,
+      "responsibilities": [
+        "Provided technical support for 200+ employees",
+        "Managed Windows and Linux workstations",
+        "Troubleshot network connectivity issues",
+        "Maintained internal documentation wiki"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "B.Sc. in Computer Science",
+      "institution": "Open University of Israel",
+      "startDate": "2022",
+      "endDate": "Present",
+      "status": "In Progress"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Microsoft Certified: Azure Solutions Architect Expert",
+      "issuer": "Microsoft",
+      "year": "2022"
+    },
+    {
+      "name": "Microsoft Certified: Azure Fundamentals",
+      "issuer": "Microsoft",
+      "year": "2021"
+    }
+  ],
+  "positions": [],
+  "cvFile": "/home/develeap/develeapAI/abc/0_hellio_hr_data/cvs/cv_001.pdf"
+}

@@ -1,0 +1,66 @@
+{
+  "id": "position_003",
+  "status": "Open",
+  "title": "Lead SRE (Site Reliability Engineer)",
+  "company": "FinTech Innovations",
+  "location": "Tel Aviv, Israel",
+  "workArrangement": "Hybrid after onboarding",
+  "experience": "8+ years (at least 3 as SRE)",
+  "description": "Lead SRE responsible for building SRE practice from scratch. Platform is growing fast and needs reliability improvements. Critical hire for Q1 launch in 6 weeks.",
+  "requirements": [
+    "8+ years in production systems, at least 3 as SRE",
+    "Deep Kubernetes knowledge (100+ microservices environment)",
+    "Strong observability background (Prometheus, Grafana, Datadog)",
+    "Experience with high-traffic systems (10M+ requests/day)",
+    "Incident management and post-mortem culture",
+    "GCP experience (primary cloud)"
+  ],
+  "niceToHave": [
+    "Chaos engineering background",
+    "Terraform/Pulumi expertise",
+    "Programming skills in Go or Python",
+    "Previous team lead experience"
+  ],
+  "responsibilities": [
+    "Lead SRE responsible for site reliability across all services",
+    "Build and mentor an SRE team (currently 1 junior)",
+    "Own incident response and on-call rotation",
+    "Drive reliability improvements and SLO/SLI framework"
+  ],
+  "skillsRequired": [
+    "Kubernetes",
+    "GCP",
+    "GKE",
+    "Istio",
+    "Prometheus",
+    "Grafana",
+    "Loki",
+    "Terraform",
+    "GitLab CI",
+    "ArgoCD",
+    "Datadog",
+    "Go",
+    "Python"
+  ],
+  "techStack": [
+    "GCP",
+    "GKE",
+    "Istio",
+    "Prometheus",
+    "Grafana",
+    "Loki",
+    "Terraform",
+    "GitLab CI",
+    "ArgoCD"
+  ],
+  "compensation": "Very competitive, equity package included",
+  "timeline": "2 weeks",
+  "urgency": "Critical",
+  "contactPerson": {
+    "name": "David Kim",
+    "title": "VP Engineering",
+    "email": "d.kim@fintech-innovations.com"
+  },
+  "candidates": [],
+  "notes": "Platform struggling with reliability issues. Q1 launch in 6 weeks. Need proven SRE leadership experience."
+}

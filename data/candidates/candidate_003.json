@@ -1,0 +1,81 @@
+{
+  "id": "candidate_003",
+  "status": "Active",
+  "personalInfo": {
+    "firstName": "Abel",
+    "lastName": "Hoover",
+    "email": "abel.hoover@email.com",
+    "phone": "060-2931583",
+    "location": "Be'er Sheva, Israel",
+    "linkedin": null,
+    "github": null
+  },
+  "summary": "Site Reliability Engineer with 4 years of experience building and maintaining highly available systems. Specialized in observability, incident response, and automation. Strong background in Kubernetes orchestration, monitoring stack design, and performance optimization. Passionate about improving system reliability through SRE best practices and SLO-driven development.",
+  "skills": [
+    "JavaScript",
+    "CloudWatch",
+    "Prometheus",
+    "ELK Stack",
+    "PowerShell",
+    "Kubernetes",
+    "Docker",
+    "Grafana",
+    "Terraform",
+    "AWS",
+    "Loki"
+  ],
+  "languages": [
+    {
+      "language": "Hebrew",
+      "proficiency": "Native"
+    },
+    {
+      "language": "English",
+      "proficiency": "Professional"
+    }
+  ],
+  "experience": [
+    {
+      "title": "Site Reliability Engineer",
+      "company": "Company 342",
+      "location": "Jerusalem",
+      "startDate": "2022",
+      "endDate": "Present",
+      "current": true,
+      "responsibilities": [
+        "Manage production Kubernetes clusters serving 50M+ requests daily",
+        "Reduced incident MTTR by 60% through improved monitoring and automated remediation",
+        "Designed and implemented observability stack using Prometheus, Grafana, and Loki",
+        "Created SLO framework and error budget policies for 15+ services",
+        "Led post-mortem process and drove reliability improvements",
+        "Built CI/CD pipelines integrating automated testing and progressive deployment"
+      ]
+    },
+    {
+      "title": "DevOps Engineer",
+      "company": "Company 150",
+      "location": "Haifa",
+      "startDate": "2020",
+      "endDate": "2022",
+      "current": false,
+      "responsibilities": [
+        "Deployed and maintained AWS infrastructure using Terraform",
+        "Migrated applications from EC2 to containerized Kubernetes environment",
+        "Implemented centralized logging with ELK stack",
+        "Automated deployment processes reducing release time by 70%"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "B.Sc. in Software Engineering",
+      "institution": "Technion - Israel Institute of Technology",
+      "startDate": "2016",
+      "endDate": "2020",
+      "status": "Completed"
+    }
+  ],
+  "certifications": [],
+  "positions": [],
+  "cvFile": "/home/develeap/develeapAI/abc/0_hellio_hr_data/cvs/cv_003.pdf"
+}

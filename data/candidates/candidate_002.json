@@ -1,0 +1,93 @@
+{
+  "id": "candidate_002",
+  "status": "Active",
+  "personalInfo": {
+    "firstName": "Abby",
+    "lastName": "Macias",
+    "email": "abby.macias@email.com",
+    "phone": "060-9969543",
+    "location": "Kfar Saba, Israel",
+    "linkedin": "linkedin.com/in/abby-macias",
+    "github": "github.com/abbymacias"
+  },
+  "summary": "QA Automation Engineer with 2 years of experience in test automation seeking to transition to DevOps. Strong programming skills in Python and experience with CI/CD pipelines from the testing perspective. Familiar with Docker and AWS from QA automation work. Eager to expand infrastructure and deployment automation skills.",
+  "skills": [
+    "Selenium",
+    "Git",
+    "Python",
+    "Pytest",
+    "Jenkins",
+    "Docker",
+    "AWS",
+    "Postman",
+    "Jira"
+  ],
+  "languages": [
+    {
+      "language": "Hebrew",
+      "proficiency": "Native"
+    },
+    {
+      "language": "English",
+      "proficiency": "Professional"
+    },
+    {
+      "language": "Russian",
+      "proficiency": "Conversational"
+    }
+  ],
+  "experience": [
+    {
+      "title": "QA Automation Engineer",
+      "company": "Company 488",
+      "location": "Rehovot",
+      "startDate": "2022",
+      "endDate": "Present",
+      "current": true,
+      "responsibilities": [
+        "Develop and maintain automated test suites using Python and Selenium",
+        "Write integration tests for microservices using Pytest",
+        "Integrate automated tests into Jenkins CI/CD pipelines",
+        "Set up test environments using Docker containers",
+        "Perform API testing using Postman and Python requests library",
+        "Collaborate with developers to improve testability and code coverage"
+      ]
+    },
+    {
+      "title": "Manual QA Tester",
+      "company": "Company 177",
+      "location": "Petah Tikva",
+      "startDate": "2021",
+      "endDate": "2022",
+      "current": false,
+      "responsibilities": [
+        "Performed manual testing for web and mobile applications",
+        "Wrote test cases and documented bugs in Jira",
+        "Participated in agile ceremonies and sprint planning"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "B.Sc. in Industrial Engineering",
+      "institution": "Afeka College",
+      "startDate": "2017",
+      "endDate": "2021",
+      "status": "Completed"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Microsoft Certified: DevOps Engineer Expert",
+      "issuer": "Microsoft",
+      "year": "2023"
+    },
+    {
+      "name": "Certified Kubernetes Security Specialist (CKS)",
+      "issuer": "Cloud Native Computing Foundation",
+      "year": "2023"
+    }
+  ],
+  "positions": [],
+  "cvFile": "/home/develeap/develeapAI/abc/0_hellio_hr_data/cvs/cv_002.pdf"
+}

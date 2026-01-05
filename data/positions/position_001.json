@@ -1,0 +1,51 @@
+{
+  "id": "position_001",
+  "status": "Open",
+  "title": "Senior DevOps Engineer",
+  "company": "Company 001",
+  "location": "Tel Aviv, Israel",
+  "workArrangement": "Hybrid (3 days office)",
+  "experience": "5+ years",
+  "description": "Leading infrastructure automation initiatives for a fast-paced fintech startup (Series B funded). The role involves mentoring junior engineers and architecting migration to EKS.",
+  "requirements": [
+    "5+ years hands-on DevOps experience",
+    "Strong AWS expertise",
+    "Kubernetes production experience",
+    "Terraform for Infrastructure as Code",
+    "CI/CD pipelines experience (GitLab CI primarily)",
+    "Python or Go for automation scripting"
+  ],
+  "niceToHave": [
+    "Experience with monitoring stacks (Prometheus + Grafana)",
+    "AWS certifications (Solutions Architect or DevOps Engineer)",
+    "Experience with microservices architectures",
+    "On-call experience with incident management"
+  ],
+  "responsibilities": [
+    "Leading infrastructure automation initiatives",
+    "Mentoring 2-3 junior engineers",
+    "Architecting migration to EKS",
+    "On-call rotation (1 week per month)"
+  ],
+  "skillsRequired": [
+    "AWS",
+    "Kubernetes",
+    "Terraform",
+    "GitLab CI",
+    "Python",
+    "Go",
+    "Prometheus",
+    "Grafana",
+    "Microservices"
+  ],
+  "compensation": "Competitive salary + equity",
+  "timeline": "4 weeks",
+  "urgency": "High",
+  "contactPerson": {
+    "name": "Sarah Chen",
+    "title": "VP Engineering",
+    "email": "sarah.chen@company.com"
+  },
+  "candidates": [],
+  "notes": "Infrastructure team is overloaded. Company is scaling fast."
+}

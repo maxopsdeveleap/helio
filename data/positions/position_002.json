@@ -1,0 +1,52 @@
+{
+  "id": "position_002",
+  "status": "Open",
+  "title": "Junior DevOps Engineer",
+  "company": "TechCorp",
+  "location": "Herzliya, Israel",
+  "workArrangement": "Office-based for first 6 months, then hybrid",
+  "experience": "0-2 years",
+  "description": "Entry-level position for someone starting their career or transitioning into DevOps. Great opportunity to learn and grow with mentorship from senior team members.",
+  "requirements": [
+    "0-2 years experience (fresh graduates welcome)",
+    "Basic understanding of Linux systems",
+    "Some scripting knowledge (Bash, Python preferred)",
+    "Familiarity with Docker basics",
+    "Willingness to learn and grow",
+    "B.Sc in Computer Science or related field (or equivalent experience)",
+    "Good communication skills",
+    "Problem-solving mindset",
+    "Hebrew and English fluency"
+  ],
+  "niceToHave": [],
+  "responsibilities": [
+    "Work closely with senior DevOps team",
+    "Help with day-to-day operations and automation tasks",
+    "Learn production systems management",
+    "Participate in team projects and initiatives"
+  ],
+  "skillsRequired": [
+    "Linux",
+    "Bash",
+    "Python",
+    "Docker",
+    "Azure"
+  ],
+  "trainingProvided": [
+    "Kubernetes and container orchestration",
+    "CI/CD best practices",
+    "Cloud platforms (Azure)",
+    "Infrastructure as Code with Terraform",
+    "Monitoring and observability"
+  ],
+  "compensation": "12,000-15,000 NIS/month depending on experience",
+  "timeline": "2-3 weeks",
+  "urgency": "Medium",
+  "contactPerson": {
+    "name": "Michael Goldberg",
+    "title": "CTO",
+    "email": "m.goldberg@techcorp.co.il"
+  },
+  "candidates": [],
+  "notes": "Company believes in mentorship and will invest in training. Not urgent."
+}
