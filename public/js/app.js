@@ -19,29 +19,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCandidates();
 });
 
-// Load JSON Data
+// Load Data from Backend API
 async function loadData() {
     try {
-        // Determine base path - relative to public/index.html
-        const basePath = window.location.protocol === 'file:'
-            ? '../data/'
-            : '/data/';
+        // Backend API base URL
+        const API_BASE_URL = 'http://localhost:8001/api';
 
-        // Load candidates
-        const candidate1 = await fetch(`${basePath}candidates/candidate_001.json`).then(r => r.json());
-        const candidate2 = await fetch(`${basePath}candidates/candidate_002.json`).then(r => r.json());
-        const candidate3 = await fetch(`${basePath}candidates/candidate_003.json`).then(r => r.json());
-        state.candidates = [candidate1, candidate2, candidate3];
+        // Load candidates from API
+        const candidatesResponse = await fetch(`${API_BASE_URL}/candidates/`);
+        state.candidates = await candidatesResponse.json();
 
-        // Load positions
-        const position1 = await fetch(`${basePath}positions/position_001.json`).then(r => r.json());
-        const position2 = await fetch(`${basePath}positions/position_002.json`).then(r => r.json());
-        const position3 = await fetch(`${basePath}positions/position_003.json`).then(r => r.json());
-        state.positions = [position1, position2, position3];
+        // Load positions from API
+        const positionsResponse = await fetch(`${API_BASE_URL}/positions/`);
+        state.positions = await positionsResponse.json();
 
-        console.log('Data loaded successfully:', state);
+        console.log('Data loaded successfully from backend:', state);
     } catch (error) {
-        console.error('Error loading data:', error);
+        console.error('Error loading data from backend:', error);
     }
 }
 
