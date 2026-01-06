@@ -129,10 +129,10 @@ function getFilteredCandidates() {
     if (state.filters.candidateSearch) {
         const search = state.filters.candidateSearch.toLowerCase();
         filtered = filtered.filter(c => {
-            const name = `${c.personalInfo.firstName} ${c.personalInfo.lastName}`.toLowerCase();
-            const location = c.personalInfo.location.toLowerCase();
-            const skills = c.skills.join(' ').toLowerCase();
-            const summary = c.summary.toLowerCase();
+            const name = `${c.first_name} ${c.last_name}`.toLowerCase();
+            const location = (c.location || '').toLowerCase();
+            const skills = (c.skills || []).join(' ').toLowerCase();
+            const summary = (c.summary || '').toLowerCase();
             return name.includes(search) || location.includes(search) ||
                    skills.includes(search) || summary.includes(search);
         });
@@ -161,18 +161,18 @@ function renderCandidates() {
             </div>
             <div class="candidate-card-header">
                 <div>
-                    <h3>${candidate.personalInfo.firstName} ${candidate.personalInfo.lastName}</h3>
-                    <p class="location">📍 ${candidate.personalInfo.location}</p>
+                    <h3>${candidate.first_name} ${candidate.last_name}</h3>
+                    <p class="location">📍 ${candidate.location || 'Not specified'}</p>
                 </div>
                 <span class="status-badge ${candidate.status.toLowerCase()}">${candidate.status}</span>
             </div>
-            <p class="summary">${candidate.summary}</p>
+            <p class="summary">${candidate.summary || ''}</p>
             <div class="skills-preview">
-                ${candidate.skills.slice(0, 5).map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
-                ${candidate.skills.length > 5 ? `<span class="skill-tag">+${candidate.skills.length - 5} more</span>` : ''}
+                ${(candidate.skills || []).slice(0, 5).map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                ${(candidate.skills || []).length > 5 ? `<span class="skill-tag">+${(candidate.skills || []).length - 5} more</span>` : ''}
             </div>
             <p class="experience">
-                ${candidate.experience.length > 0 ?
+                ${(candidate.experience || []).length > 0 ?
                   `Currently: ${candidate.experience[0].title} at ${candidate.experience[0].company}` :
                   'No experience listed'}
             </p>
@@ -240,37 +240,37 @@ function showCandidateProfile(candidateId) {
     const container = document.getElementById('profile-content');
     container.innerHTML = `
         <div class="profile-header">
-            <h2>${candidate.personalInfo.firstName} ${candidate.personalInfo.lastName}</h2>
+            <h2>${candidate.first_name} ${candidate.last_name}</h2>
             <div class="profile-meta">
-                <div class="profile-meta-item">📧 ${candidate.personalInfo.email}</div>
-                <div class="profile-meta-item">📱 ${candidate.personalInfo.phone}</div>
-                <div class="profile-meta-item">📍 ${candidate.personalInfo.location}</div>
-                ${candidate.personalInfo.linkedin ? `<div class="profile-meta-item">💼 <a href="https://${candidate.personalInfo.linkedin}" target="_blank">LinkedIn</a></div>` : ''}
-                ${candidate.personalInfo.github ? `<div class="profile-meta-item">💻 <a href="https://${candidate.personalInfo.github}" target="_blank">GitHub</a></div>` : ''}
+                <div class="profile-meta-item">📧 ${candidate.email || 'Not specified'}</div>
+                <div class="profile-meta-item">📱 ${candidate.phone || 'Not specified'}</div>
+                <div class="profile-meta-item">📍 ${candidate.location || 'Not specified'}</div>
+                ${candidate.linkedin ? `<div class="profile-meta-item">💼 <a href="https://${candidate.linkedin}" target="_blank">LinkedIn</a></div>` : ''}
+                ${candidate.github ? `<div class="profile-meta-item">💻 <a href="https://${candidate.github}" target="_blank">GitHub</a></div>` : ''}
             </div>
         </div>
 
         <div class="profile-section">
             <h3>Summary</h3>
-            <p>${candidate.summary}</p>
+            <p>${candidate.summary || 'No summary provided'}</p>
         </div>
 
         <div class="profile-section">
             <h3>Skills</h3>
             <div class="skills-list">
-                ${candidate.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                ${(candidate.skills || []).map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
             </div>
         </div>
 
         <div class="profile-section">
             <h3>Experience</h3>
-            ${candidate.experience.map(exp => `
+            ${(candidate.experience || []).map(exp => `
                 <div class="experience-item">
                     <h4>${exp.title}</h4>
-                    <div class="company">${exp.company} - ${exp.location}</div>
-                    <div class="dates">${exp.startDate} - ${exp.endDate}</div>
+                    <div class="company">${exp.company} - ${exp.location || 'Location not specified'}</div>
+                    <div class="dates">${exp.start_date || 'N/A'} - ${exp.end_date || 'N/A'}</div>
                     <ul>
-                        ${exp.responsibilities.map(resp => `<li>${resp}</li>`).join('')}
+                        ${(exp.responsibilities || []).map(resp => `<li>${resp}</li>`).join('')}
                     </ul>
                 </div>
             `).join('')}
@@ -278,16 +278,16 @@ function showCandidateProfile(candidateId) {
 
         <div class="profile-section">
             <h3>Education</h3>
-            ${candidate.education.map(edu => `
+            ${(candidate.education || []).map(edu => `
                 <div class="education-item">
                     <h4>${edu.degree}</h4>
                     <div class="institution">${edu.institution}</div>
-                    <div class="dates">${edu.startDate} - ${edu.endDate} (${edu.status})</div>
+                    <div class="dates">${edu.start_date || 'N/A'} - ${edu.end_date || 'N/A'} (${edu.status || 'N/A'})</div>
                 </div>
             `).join('')}
         </div>
 
-        ${candidate.certifications.length > 0 ? `
+        ${(candidate.certifications || []).length > 0 ? `
             <div class="profile-section">
                 <h3>Certifications</h3>
                 <div class="certifications-list">
@@ -297,7 +297,7 @@ function showCandidateProfile(candidateId) {
                                 <div class="name">${cert.name}</div>
                                 <div class="issuer">${cert.issuer}</div>
                             </div>
-                            <div class="year">${cert.year}</div>
+                            <div class="year">${cert.year || 'N/A'}</div>
                         </div>
                     `).join('')}
                 </div>
@@ -307,7 +307,7 @@ function showCandidateProfile(candidateId) {
         <div class="profile-section">
             <h3>Languages</h3>
             <div class="languages-list">
-                ${candidate.languages.map(lang => `
+                ${(candidate.languages || []).map(lang => `
                     <div class="language-item">
                         <div class="language">${lang.language}</div>
                         <div class="proficiency">${lang.proficiency}</div>
@@ -317,7 +317,7 @@ function showCandidateProfile(candidateId) {
         </div>
 
         <div class="profile-section">
-            <a href="${candidate.cvFile}" class="cv-link" target="_blank">📄 View Original CV</a>
+            <a href="${candidate.cvFile || '#'}" class="cv-link" target="_blank">📄 View Original CV</a>
         </div>
     `;
 
@@ -337,52 +337,52 @@ function showComparison() {
     container.innerHTML = candidates.map(candidate => `
         <div class="comparison-card">
             <div class="profile-header">
-                <h3>${candidate.personalInfo.firstName} ${candidate.personalInfo.lastName}</h3>
+                <h3>${candidate.first_name} ${candidate.last_name}</h3>
                 <div class="profile-meta">
-                    <div class="profile-meta-item">📧 ${candidate.personalInfo.email}</div>
-                    <div class="profile-meta-item">📍 ${candidate.personalInfo.location}</div>
+                    <div class="profile-meta-item">📧 ${candidate.email || 'Not specified'}</div>
+                    <div class="profile-meta-item">📍 ${candidate.location || 'Not specified'}</div>
                 </div>
             </div>
 
             <div class="profile-section">
                 <h4>Summary</h4>
-                <p>${candidate.summary}</p>
+                <p>${candidate.summary || 'No summary provided'}</p>
             </div>
 
             <div class="profile-section">
-                <h4>Skills (${candidate.skills.length})</h4>
+                <h4>Skills (${(candidate.skills || []).length})</h4>
                 <div class="skills-list">
-                    ${candidate.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                    ${(candidate.skills || []).map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
                 </div>
             </div>
 
             <div class="profile-section">
                 <h4>Experience</h4>
-                ${candidate.experience.slice(0, 2).map(exp => `
+                ${(candidate.experience || []).slice(0, 2).map(exp => `
                     <div class="experience-item">
                         <h5>${exp.title}</h5>
                         <div class="company">${exp.company}</div>
-                        <div class="dates">${exp.startDate} - ${exp.endDate}</div>
+                        <div class="dates">${exp.start_date || 'N/A'} - ${exp.end_date || 'N/A'}</div>
                     </div>
                 `).join('')}
             </div>
 
             <div class="profile-section">
                 <h4>Education</h4>
-                ${candidate.education.map(edu => `
+                ${(candidate.education || []).map(edu => `
                     <div>${edu.degree} - ${edu.institution}</div>
                 `).join('')}
             </div>
 
-            ${candidate.certifications.length > 0 ? `
+            ${(candidate.certifications || []).length > 0 ? `
                 <div class="profile-section">
                     <h4>Certifications (${candidate.certifications.length})</h4>
-                    ${candidate.certifications.map(cert => `<div>• ${cert.name} (${cert.year})</div>`).join('')}
+                    ${candidate.certifications.map(cert => `<div>• ${cert.name} (${cert.year || 'N/A'})</div>`).join('')}
                 </div>
             ` : ''}
 
             <div class="profile-section">
-                <a href="${candidate.cvFile}" class="cv-link" target="_blank">📄 View CV</a>
+                <a href="${candidate.cvFile || '#'}" class="cv-link" target="_blank">📄 View CV</a>
             </div>
         </div>
     `).join('');
@@ -408,7 +408,7 @@ function getFilteredPositions() {
             const title = p.title.toLowerCase();
             const company = p.company.toLowerCase();
             const description = p.description.toLowerCase();
-            const skills = p.skillsRequired.join(' ').toLowerCase();
+            const skills = (p.skills || []).join(' ').toLowerCase();
             return title.includes(search) || company.includes(search) ||
                    description.includes(search) || skills.includes(search);
         });
@@ -438,8 +438,8 @@ function renderPositions() {
             </div>
             <p class="description">${position.description}</p>
             <div class="skills-preview">
-                ${position.skillsRequired.slice(0, 5).map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
-                ${position.skillsRequired.length > 5 ? `<span class="skill-tag">+${position.skillsRequired.length - 5} more</span>` : ''}
+                ${(position.skills || []).slice(0, 5).map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                ${(position.skills || []).length > 5 ? `<span class="skill-tag">+${(position.skills || []).length - 5} more</span>` : ''}
             </div>
             <div class="meta">
                 <div class="meta-item">📍 ${position.location}</div>
@@ -488,11 +488,11 @@ function showPositionDetail(positionId) {
             </ul>
         </div>
 
-        ${position.niceToHave && position.niceToHave.length > 0 ? `
+        ${position.nice_to_have && position.nice_to_have.length > 0 ? `
             <div class="profile-section">
                 <h3>Nice to Have</h3>
                 <ul class="requirements-list">
-                    ${position.niceToHave.map(item => `<li>${item}</li>`).join('')}
+                    ${position.nice_to_have.map(item => `<li>${item}</li>`).join('')}
                 </ul>
             </div>
         ` : ''}
@@ -504,20 +504,13 @@ function showPositionDetail(positionId) {
             </ul>
         </div>
 
+        ${(position.skills || []).length > 0 ? `
         <div class="profile-section">
             <h3>Required Skills</h3>
             <div class="skills-list">
-                ${position.skillsRequired.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                ${position.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
             </div>
         </div>
-
-        ${position.techStack ? `
-            <div class="profile-section">
-                <h3>Tech Stack</h3>
-                <div class="skills-list">
-                    ${position.techStack.map(tech => `<span class="skill-tag">${tech}</span>`).join('')}
-                </div>
-            </div>
         ` : ''}
 
         <div class="profile-section">
@@ -525,7 +518,7 @@ function showPositionDetail(positionId) {
             <div class="info-grid">
                 <div class="info-item">
                     <label>Work Arrangement</label>
-                    <div class="value">${position.workArrangement}</div>
+                    <div class="value">${position.work_arrangement || 'Not specified'}</div>
                 </div>
                 <div class="info-item">
                     <label>Compensation</label>
@@ -542,23 +535,25 @@ function showPositionDetail(positionId) {
             </div>
         </div>
 
+        ${position.contact_person && (position.contact_person.name || position.contact_person.title || position.contact_person.email) ? `
         <div class="profile-section">
             <h3>Contact Person</h3>
             <div class="info-grid">
                 <div class="info-item">
                     <label>Name</label>
-                    <div class="value">${position.contactPerson.name}</div>
+                    <div class="value">${position.contact_person.name || 'Not specified'}</div>
                 </div>
                 <div class="info-item">
                     <label>Title</label>
-                    <div class="value">${position.contactPerson.title}</div>
+                    <div class="value">${position.contact_person.title || 'Not specified'}</div>
                 </div>
                 <div class="info-item">
                     <label>Email</label>
-                    <div class="value">${position.contactPerson.email}</div>
+                    <div class="value">${position.contact_person.email || 'Not specified'}</div>
                 </div>
             </div>
         </div>
+        ` : ''}
 
         ${position.notes ? `
             <div class="profile-section">
@@ -566,9 +561,125 @@ function showPositionDetail(positionId) {
                 <p>${position.notes}</p>
             </div>
         ` : ''}
+
+        <div class="profile-actions">
+            <button id="edit-position-btn" class="primary-btn">Edit Position</button>
+        </div>
     `;
 
     document.getElementById('position-list').style.display = 'none';
     document.querySelectorAll('#positions-view .controls').forEach(el => el.style.display = 'none');
     document.getElementById('position-detail').style.display = 'block';
+
+    // Add edit button click handler
+    document.getElementById('edit-position-btn').addEventListener('click', () => showPositionEditForm(positionId));
+}
+
+// Show position edit form
+function showPositionEditForm(positionId) {
+    const position = state.positions.find(p => p.id === positionId);
+    if (!position) return;
+
+    const container = document.getElementById('position-content');
+    container.innerHTML = `
+        <h2>Edit Position</h2>
+        <form id="edit-position-form" class="edit-form">
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status" required>
+                    <option value="Open" ${position.status === 'Open' ? 'selected' : ''}>Open</option>
+                    <option value="Closed" ${position.status === 'Closed' ? 'selected' : ''}>Closed</option>
+                    <option value="On Hold" ${position.status === 'On Hold' ? 'selected' : ''}>On Hold</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Urgency</label>
+                <select name="urgency" required>
+                    <option value="Critical" ${position.urgency === 'Critical' ? 'selected' : ''}>Critical</option>
+                    <option value="High" ${position.urgency === 'High' ? 'selected' : ''}>High</option>
+                    <option value="Medium" ${position.urgency === 'Medium' ? 'selected' : ''}>Medium</option>
+                    <option value="Low" ${position.urgency === 'Low' ? 'selected' : ''}>Low</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" rows="4" required>${position.description}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Compensation</label>
+                <input type="text" name="compensation" value="${position.compensation || ''}" />
+            </div>
+
+            <div class="form-group">
+                <label>Timeline</label>
+                <input type="text" name="timeline" value="${position.timeline || ''}" />
+            </div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="notes" rows="3">${position.notes || ''}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="primary-btn">Save Changes</button>
+                <button type="button" id="cancel-edit-btn" class="secondary-btn">Cancel</button>
+            </div>
+        </form>
+    `;
+
+    // Handle form submission
+    document.getElementById('edit-position-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await savePositionChanges(positionId, new FormData(e.target));
+    });
+
+    // Handle cancel
+    document.getElementById('cancel-edit-btn').addEventListener('click', () => showPositionDetail(positionId));
+}
+
+// Save position changes to backend
+async function savePositionChanges(positionId, formData) {
+    try {
+        const API_BASE_URL = 'http://localhost:8001/api';
+        const updateData = {
+            status: formData.get('status'),
+            urgency: formData.get('urgency'),
+            description: formData.get('description'),
+            compensation: formData.get('compensation'),
+            timeline: formData.get('timeline'),
+            notes: formData.get('notes')
+        };
+
+        const response = await fetch(`${API_BASE_URL}/positions/${positionId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update position');
+        }
+
+        const updatedPosition = await response.json();
+
+        // Update local state
+        const index = state.positions.findIndex(p => p.id === positionId);
+        if (index !== -1) {
+            state.positions[index] = updatedPosition;
+        }
+
+        // Show success message
+        alert('Position updated successfully!');
+
+        // Return to position detail view
+        showPositionDetail(positionId);
+    } catch (error) {
+        console.error('Error updating position:', error);
+        alert('Failed to update position. Please try again.');
+    }
 }
