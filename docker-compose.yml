@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: hellio_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hellio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-hellio_hr}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hellio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - hellio_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hellio_backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-hellio}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-hellio_hr}
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - hellio_network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  hellio_network:
+    driver: bridge
