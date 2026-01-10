@@ -45,7 +45,10 @@ function setupEventListeners() {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const view = btn.dataset.view;
-            switchView(view);
+            // Only switch view if button has a data-view attribute
+            if (view) {
+                switchView(view);
+            }
         });
     });
 
@@ -223,12 +226,19 @@ function updateCompareButton() {
     const compareBtn = document.getElementById('compare-btn');
     const count = state.selectedCandidates.size;
 
-    if (count >= 2) {
-        compareBtn.disabled = false;
-        compareBtn.textContent = `Compare ${count} Selected`;
-    } else {
+    if (count === 0) {
+        // Hide button when nothing selected
+        compareBtn.style.display = 'none';
+    } else if (count === 1) {
+        // Show disabled button with "min 2" message when 1 selected
+        compareBtn.style.display = 'block';
         compareBtn.disabled = true;
         compareBtn.textContent = 'Compare Selected (min 2)';
+    } else {
+        // Enable button when 2+ selected
+        compareBtn.style.display = 'block';
+        compareBtn.disabled = false;
+        compareBtn.textContent = `Compare ${count} Selected`;
     }
 }
 

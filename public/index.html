@@ -21,6 +21,7 @@
         <div class="container">
             <button class="nav-btn active" data-view="candidates">Candidates</button>
             <button class="nav-btn" data-view="positions">Positions</button>
+            <button class="nav-btn" id="open-chat-btn">💬 SQL Chat</button>
         </div>
     </nav>
 
@@ -92,6 +93,46 @@
         </div>
     </footer>
 
+    <!-- Chat Modal -->
+    <div id="chat-modal" class="chat-modal">
+        <div class="chat-modal-content">
+            <div class="chat-modal-header">
+                <h2>💬 SQL Chat Assistant</h2>
+                <button class="chat-close-btn" id="close-chat-btn">&times;</button>
+            </div>
+            <div class="chat-modal-body">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        <div class="message-content">
+                            <div class="answer">
+                                👋 Hello! I can help you query the HR database using natural language.
+                                Ask me anything about candidates, positions, or analytics. Click an example below to get started!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="examples" id="examples">
+                    <h3>Example Questions:</h3>
+                    <div class="example-chips" id="exampleChips">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="input-container">
+                    <input
+                        type="text"
+                        id="questionInput"
+                        placeholder="Ask a question about candidates or positions..."
+                        autocomplete="off"
+                    />
+                    <button id="sendButton">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="js/app.js"></script>
+    <script src="js/chat.js?v=4"></script>
 </body>
 </html>
