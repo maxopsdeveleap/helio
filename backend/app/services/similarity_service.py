@@ -11,7 +11,7 @@ from sqlalchemy import text
 import re
 
 from app.models.candidate import Candidate
-from app.models.position import Position
+from app.models.position import Position, CandidatePosition
 from app.services.embedding_service import generate_embedding, prepare_position_text
 
 
@@ -131,6 +131,14 @@ def find_similar_candidates(
         {"position_id": position_id, "fetch_limit": limit * 3}
     )
 
+    # Get list of candidates already added to this position
+    already_added_ids = {
+        cp.candidate_id
+        for cp in db.query(CandidatePosition).filter(
+            CandidatePosition.position_id == position_id
+        ).all()
+    }
+
     # Format and filter results
     candidates = []
     for row in result:
@@ -138,6 +146,10 @@ def find_similar_candidates(
 
         # Filter by minimum similarity
         if similarity_score < min_similarity:
+            continue
+
+        # Skip candidates already added to this position
+        if row.id in already_added_ids:
             continue
 
         # Get full candidate object to check experience
