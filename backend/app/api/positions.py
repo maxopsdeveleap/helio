@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from app.models import get_db
-from app.models.position import Position, PositionRequirement, PositionResponsibility, PositionSkill
+from app.models.position import Position, PositionRequirement, PositionResponsibility, PositionSkill, CandidatePosition
+from app.models.candidate import Candidate
 from app.schemas.position import PositionResponse, PositionCreate, PositionUpdate
 from app.services.similarity_service import find_similar_candidates
 
@@ -129,3 +130,80 @@ async def suggest_candidates_for_position(position_id: str, db: Session = Depend
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to find similar candidates: {str(e)}")
+
+@router.post("/{position_id}/candidates/{candidate_id}")
+async def add_candidate_to_position(position_id: str, candidate_id: str, db: Session = Depends(get_db)):
+    """Add a candidate to a position"""
+    # Check if position exists
+    position = db.query(Position).filter(Position.id == position_id).first()
+    if not position:
+        raise HTTPException(status_code=404, detail="Position not found")
+
+    # Check if candidate exists
+    candidate = db.query(Candidate).filter(Candidate.id == candidate_id).first()
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+
+    # Check if already added
+    existing = db.query(CandidatePosition).filter(
+        CandidatePosition.position_id == position_id,
+        CandidatePosition.candidate_id == candidate_id
+    ).first()
+
+    if existing:
+        raise HTTPException(status_code=400, detail="Candidate already added to this position")
+
+    # Add candidate to position
+    candidate_position = CandidatePosition(
+        candidate_id=candidate_id,
+        position_id=position_id,
+        application_status="Suggested"
+    )
+    db.add(candidate_position)
+    db.commit()
+
+    return {"message": "Candidate added to position successfully"}
+
+@router.delete("/{position_id}/candidates/{candidate_id}")
+async def remove_candidate_from_position(position_id: str, candidate_id: str, db: Session = Depends(get_db)):
+    """Remove a candidate from a position"""
+    candidate_position = db.query(CandidatePosition).filter(
+        CandidatePosition.position_id == position_id,
+        CandidatePosition.candidate_id == candidate_id
+    ).first()
+
+    if not candidate_position:
+        raise HTTPException(status_code=404, detail="Candidate not found in this position")
+
+    db.delete(candidate_position)
+    db.commit()
+
+    return {"message": "Candidate removed from position successfully"}
+
+@router.get("/{position_id}/candidates", response_model=List[dict])
+async def get_position_candidates(position_id: str, db: Session = Depends(get_db)):
+    """Get all candidates added to a position"""
+    position = db.query(Position).filter(Position.id == position_id).first()
+    if not position:
+        raise HTTPException(status_code=404, detail="Position not found")
+
+    candidate_positions = db.query(CandidatePosition).filter(
+        CandidatePosition.position_id == position_id
+    ).all()
+
+    result = []
+    for cp in candidate_positions:
+        candidate = db.query(Candidate).filter(Candidate.id == cp.candidate_id).first()
+        if candidate:
+            result.append({
+                "id": candidate.id,
+                "first_name": candidate.first_name,
+                "last_name": candidate.last_name,
+                "email": candidate.email,
+                "location": candidate.location,
+                "summary": candidate.summary,
+                "application_status": cp.application_status,
+                "applied_at": cp.applied_at.isoformat() if cp.applied_at else None
+            })
+
+    return result

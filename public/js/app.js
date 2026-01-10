@@ -586,6 +586,13 @@ function showPositionDetail(positionId) {
             </div>
         </div>
 
+        <div id="added-candidates-section" class="profile-section">
+            <h3>📋 Candidates Added to Position</h3>
+            <div id="added-candidates-content">
+                <p class="loading">Loading candidates...</p>
+            </div>
+        </div>
+
         <div class="profile-section">
             <h3>Description</h3>
             <p>${position.description}</p>
@@ -686,6 +693,57 @@ function showPositionDetail(positionId) {
 
     // Add suggest candidates button click handler
     document.getElementById('suggest-candidates-btn').addEventListener('click', () => suggestCandidatesForPosition(positionId));
+
+    // Load and display added candidates
+    loadAndDisplayAddedCandidates(positionId);
+}
+
+// Load and display candidates added to position
+async function loadAndDisplayAddedCandidates(positionId) {
+    const content = document.getElementById('added-candidates-content');
+
+    try {
+        const candidates = await loadPositionCandidates(positionId);
+
+        if (candidates.length === 0) {
+            content.innerHTML = '<p class="empty-state">No candidates added yet. Use "Suggest Candidates" to find matches.</p>';
+        } else {
+            content.innerHTML = candidates.map(candidate => `
+                <div class="added-candidate-card">
+                    <div class="candidate-info">
+                        <h4>${candidate.first_name} ${candidate.last_name}</h4>
+                        <p class="candidate-summary">${candidate.summary || 'No summary available'}</p>
+                        <div class="candidate-meta">
+                            ${candidate.email ? `<span>📧 ${candidate.email}</span>` : ''}
+                            ${candidate.location ? `<span>📍 ${candidate.location}</span>` : ''}
+                            <span class="status-badge">${candidate.application_status || 'Pending'}</span>
+                        </div>
+                    </div>
+                    <div class="candidate-actions">
+                        <button class="view-candidate-btn" data-candidate-id="${candidate.id}">View Profile</button>
+                        <button class="remove-candidate-btn" data-candidate-id="${candidate.id}" data-position-id="${positionId}">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add event listeners
+            content.querySelectorAll('.view-candidate-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchView('candidates');
+                    setTimeout(() => showCandidateProfile(btn.dataset.candidateId), 100);
+                });
+            });
+
+            content.querySelectorAll('.remove-candidate-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    removeCandidateFromPosition(btn.dataset.positionId, btn.dataset.candidateId);
+                });
+            });
+        }
+    } catch (error) {
+        console.error('Error loading added candidates:', error);
+        content.innerHTML = '<p class="error-state">Failed to load candidates.</p>';
+    }
 }
 
 // Suggest candidates for position using semantic search
@@ -726,10 +784,23 @@ async function suggestCandidatesForPosition(positionId) {
                             ${candidate.email ? `<span>📧 ${candidate.email}</span>` : ''}
                             ${candidate.location ? `<span>📍 ${candidate.location}</span>` : ''}
                         </div>
-                        <button class="view-candidate-btn" data-candidate-id="${candidate.id}">View Full Profile</button>
+                        <div class="candidate-actions">
+                            <button class="add-candidate-btn" data-candidate-id="${candidate.id}" data-position-id="${positionId}">➕ Add to Position</button>
+                            <button class="view-candidate-btn" data-candidate-id="${candidate.id}">View Full Profile</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
+
+            // Add click listeners to add candidate buttons
+            content.querySelectorAll('.add-candidate-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const candidateId = btn.dataset.candidateId;
+                    const positionId = btn.dataset.positionId;
+                    await addCandidateToPosition(positionId, candidateId, btn);
+                });
+            });
 
             // Add click listeners to view candidate buttons
             content.querySelectorAll('.view-candidate-btn').forEach(btn => {
@@ -863,5 +934,83 @@ async function savePositionChanges(positionId, formData) {
     } catch (error) {
         console.error('Error updating position:', error);
         alert('Failed to update position. Please try again.');
+    }
+}
+
+// Add candidate to position
+async function addCandidateToPosition(positionId, candidateId, buttonElement) {
+    const API_BASE_URL = 'http://localhost:8001/api';
+
+    try {
+        buttonElement.disabled = true;
+        buttonElement.textContent = '⏳ Adding...';
+
+        const response = await fetch(`${API_BASE_URL}/positions/${positionId}/candidates/${candidateId}`, {
+            method: 'POST'
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to add candidate');
+        }
+
+        buttonElement.textContent = '✅ Added';
+        buttonElement.style.background = '#28a745';
+
+        // Reload position to show updated candidates list
+        setTimeout(() => showPositionDetail(positionId), 1000);
+
+    } catch (error) {
+        console.error('Error adding candidate:', error);
+        buttonElement.textContent = '❌ Failed';
+        buttonElement.disabled = false;
+        alert(error.message);
+    }
+}
+
+// Remove candidate from position
+async function removeCandidateFromPosition(positionId, candidateId) {
+    const API_BASE_URL = 'http://localhost:8001/api';
+
+    if (!confirm('Remove this candidate from the position?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/positions/${positionId}/candidates/${candidateId}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to remove candidate');
+        }
+
+        // Reload position to show updated list
+        showPositionDetail(positionId);
+
+    } catch (error) {
+        console.error('Error removing candidate:', error);
+        alert('Failed to remove candidate. Please try again.');
+    }
+}
+
+// Load and display candidates added to position
+async function loadPositionCandidates(positionId) {
+    const API_BASE_URL = 'http://localhost:8001/api';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/positions/${positionId}/candidates`);
+
+        if (!response.ok) {
+            throw new Error('Failed to load candidates');
+        }
+
+        const candidates = await response.json();
+
+        return candidates;
+
+    } catch (error) {
+        console.error('Error loading position candidates:', error);
+        return [];
     }
 }
