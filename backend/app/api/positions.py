@@ -160,9 +160,14 @@ async def add_candidate_to_position(position_id: str, candidate_id: str, db: Ses
         application_status="Suggested"
     )
     db.add(candidate_position)
+
+    # Update candidate status to Active when added to a position
+    if candidate.status == "New":
+        candidate.status = "Active"
+
     db.commit()
 
-    return {"message": "Candidate added to position successfully"}
+    return {"message": "Candidate added to position successfully", "status_updated": candidate.status}
 
 @router.delete("/{position_id}/candidates/{candidate_id}")
 async def remove_candidate_from_position(position_id: str, candidate_id: str, db: Session = Depends(get_db)):
