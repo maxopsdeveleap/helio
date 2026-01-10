@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:15
+    image: pgvector/pgvector:pg15
     container_name: hellio_postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-hellio}
@@ -31,6 +31,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-hellio}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-hellio_hr}
       PYTHONUNBUFFERED: 1
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      VOYAGE_API_KEY: ${VOYAGE_API_KEY}
     ports:
       - "8001:8000"
     volumes:

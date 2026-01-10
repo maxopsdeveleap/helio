@@ -334,6 +334,98 @@ function showCandidateProfile(candidateId) {
     document.getElementById('candidate-list').style.display = 'none';
     document.querySelector('.controls').style.display = 'none';
     document.getElementById('candidate-profile').style.display = 'block';
+
+    // Auto-load suggested positions
+    suggestPositionsForCandidate(candidateId);
+}
+
+// Suggest positions for candidate using semantic search
+async function suggestPositionsForCandidate(candidateId) {
+    // Check if suggested positions section already exists
+    let section = document.getElementById('suggested-positions-section');
+
+    if (!section) {
+        // Add the section to the profile
+        const profileContent = document.getElementById('profile-content');
+        const sectionHTML = `
+            <div id="suggested-positions-section" class="profile-section">
+                <h3>🎯 Suggested Positions</h3>
+                <div id="suggested-positions-content">
+                    <p class="loading">Analyzing positions using AI...</p>
+                </div>
+            </div>
+        `;
+        profileContent.insertAdjacentHTML('beforeend', sectionHTML);
+        section = document.getElementById('suggested-positions-section');
+    }
+
+    const content = document.getElementById('suggested-positions-content');
+
+    try {
+        // Check browser cache first
+        const cacheKey = `suggested_positions_${candidateId}`;
+        const cachedData = sessionStorage.getItem(cacheKey);
+
+        let positions;
+
+        if (cachedData) {
+            // Use cached data
+            console.log(`Using cached position suggestions for candidate ${candidateId}`);
+            positions = JSON.parse(cachedData);
+            content.innerHTML = '<p class="loading">Loading cached suggestions...</p>';
+        } else {
+            // Fetch from API
+            console.log(`Fetching fresh position suggestions for candidate ${candidateId}`);
+            const API_BASE_URL = 'http://localhost:8001/api';
+            const response = await fetch(`${API_BASE_URL}/candidates/${candidateId}/suggest-positions`);
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch suggested positions');
+            }
+
+            positions = await response.json();
+
+            // Store in cache
+            sessionStorage.setItem(cacheKey, JSON.stringify(positions));
+        }
+
+        if (positions.length === 0) {
+            content.innerHTML = '<p class="empty-state">No matching positions found. Check back when new positions are added.</p>';
+        } else {
+            content.innerHTML = positions.map((position, index) => `
+                <div class="suggested-position-card">
+                    <div class="suggestion-rank">#${index + 1}</div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-header">
+                            <h4>${position.title} - ${position.company}</h4>
+                            <span class="similarity-score">${(position.similarity_score * 100).toFixed(1)}% Match</span>
+                        </div>
+                        <p class="match-explanation">${position.match_explanation}</p>
+                        <div class="candidate-meta">
+                            ${position.location ? `<span>📍 ${position.location}</span>` : ''}
+                            ${position.experience ? `<span>💼 ${position.experience}</span>` : ''}
+                        </div>
+                        <button class="view-position-btn" data-position-id="${position.id}">View Full Position</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add click listeners to view position buttons
+            content.querySelectorAll('.view-position-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const positionId = btn.dataset.positionId;
+                    // Switch to positions view and show the position
+                    switchView('positions');
+                    setTimeout(() => showPositionDetail(positionId), 100);
+                });
+            });
+        }
+
+    } catch (error) {
+        console.error('Error fetching suggested positions:', error);
+        content.innerHTML = '<p class="error-state">Failed to load position suggestions. Please try again later.</p>';
+    }
 }
 
 // Show Comparison
@@ -484,6 +576,14 @@ function showPositionDetail(positionId) {
                     <span class="urgency-badge ${position.urgency.toLowerCase()}">${position.urgency} Priority</span>
                 </div>
             </div>
+            <button id="suggest-candidates-btn" class="suggest-btn">🎯 Suggest Top 3 Candidates</button>
+        </div>
+
+        <div id="suggested-candidates-section" style="display: none;">
+            <div class="profile-section">
+                <h3>🎯 Suggested Candidates</h3>
+                <div id="suggested-candidates-content"></div>
+            </div>
         </div>
 
         <div class="profile-section">
@@ -583,6 +683,78 @@ function showPositionDetail(positionId) {
 
     // Add edit button click handler
     document.getElementById('edit-position-btn').addEventListener('click', () => showPositionEditForm(positionId));
+
+    // Add suggest candidates button click handler
+    document.getElementById('suggest-candidates-btn').addEventListener('click', () => suggestCandidatesForPosition(positionId));
+}
+
+// Suggest candidates for position using semantic search
+async function suggestCandidatesForPosition(positionId) {
+    const button = document.getElementById('suggest-candidates-btn');
+    const section = document.getElementById('suggested-candidates-section');
+    const content = document.getElementById('suggested-candidates-content');
+
+    // Show loading state
+    button.disabled = true;
+    button.textContent = '⏳ Finding best matches...';
+    content.innerHTML = '<p class="loading">Analyzing candidates using AI...</p>';
+    section.style.display = 'block';
+
+    try {
+        const API_BASE_URL = 'http://localhost:8001/api';
+        const response = await fetch(`${API_BASE_URL}/positions/${positionId}/suggest-candidates`);
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch suggested candidates');
+        }
+
+        const candidates = await response.json();
+
+        if (candidates.length === 0) {
+            content.innerHTML = '<p class="empty-state">No matching candidates found. Try adjusting the requirements or add more candidates to the database.</p>';
+        } else {
+            content.innerHTML = candidates.map((candidate, index) => `
+                <div class="suggested-candidate-card">
+                    <div class="suggestion-rank">#${index + 1}</div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-header">
+                            <h4>${candidate.first_name} ${candidate.last_name}</h4>
+                            <span class="similarity-score">${(candidate.similarity_score * 100).toFixed(1)}% Match</span>
+                        </div>
+                        <p class="candidate-summary">${candidate.summary || 'No summary available'}</p>
+                        <div class="candidate-meta">
+                            ${candidate.email ? `<span>📧 ${candidate.email}</span>` : ''}
+                            ${candidate.location ? `<span>📍 ${candidate.location}</span>` : ''}
+                        </div>
+                        <button class="view-candidate-btn" data-candidate-id="${candidate.id}">View Full Profile</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add click listeners to view candidate buttons
+            content.querySelectorAll('.view-candidate-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const candidateId = btn.dataset.candidateId;
+                    // Switch to candidates view and show the candidate
+                    switchView('candidates');
+                    setTimeout(() => showCandidateProfile(candidateId), 100);
+                });
+            });
+        }
+
+        button.textContent = '✅ Suggestions Generated';
+        setTimeout(() => {
+            button.textContent = '🎯 Suggest Top 3 Candidates';
+            button.disabled = false;
+        }, 2000);
+
+    } catch (error) {
+        console.error('Error fetching suggested candidates:', error);
+        content.innerHTML = '<p class="error-state">Failed to load suggestions. Please try again.</p>';
+        button.textContent = '❌ Error - Try Again';
+        button.disabled = false;
+    }
 }
 
 // Show position edit form

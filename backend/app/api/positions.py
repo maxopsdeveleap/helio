@@ -4,6 +4,7 @@ from typing import List
 from app.models import get_db
 from app.models.position import Position, PositionRequirement, PositionResponsibility, PositionSkill
 from app.schemas.position import PositionResponse, PositionCreate, PositionUpdate
+from app.services.similarity_service import find_similar_candidates
 
 router = APIRouter()
 
@@ -105,3 +106,26 @@ async def delete_position(position_id: str, db: Session = Depends(get_db)):
     db.commit()
 
     return None
+
+@router.get("/{position_id}/suggest-candidates", response_model=List[dict])
+async def suggest_candidates_for_position(position_id: str, db: Session = Depends(get_db)):
+    """
+    Suggest top 3 candidates for a position using semantic similarity.
+
+    Returns candidates ranked by how well their skills and experience match
+    the position requirements, using vector embeddings for semantic search.
+    """
+    try:
+        candidates = find_similar_candidates(
+            position_id=position_id,
+            db=db,
+            limit=3,
+            min_similarity=0.5  # Lower threshold for more results
+        )
+
+        return candidates
+
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to find similar candidates: {str(e)}")

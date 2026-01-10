@@ -4,6 +4,8 @@ from typing import List
 from app.models import get_db
 from app.models.candidate import Candidate, CandidateSkill, CandidateExperience, CandidateEducation, CandidateCertification, CandidateLanguage
 from app.schemas.candidate import CandidateResponse, CandidateCreate, CandidateUpdate
+from app.services.similarity_service import find_similar_positions
+from app.services.matching_service import explain_multiple_matches
 
 router = APIRouter()
 
@@ -120,3 +122,41 @@ async def delete_candidate(candidate_id: str, db: Session = Depends(get_db)):
     db.commit()
 
     return None
+
+@router.get("/{candidate_id}/suggest-positions", response_model=List[dict])
+async def suggest_positions_for_candidate(candidate_id: str, db: Session = Depends(get_db)):
+    """
+    Suggest top 3 positions for a candidate using semantic similarity.
+
+    Returns positions ranked by how well they match the candidate's skills
+    and experience, with AI-generated explanations for each match.
+    """
+    try:
+        # Get candidate data
+        candidate = db.query(Candidate).filter(Candidate.id == candidate_id).first()
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+
+        # Get candidate as dict for LLM
+        candidate_dict = format_candidate_response(candidate)
+
+        # Find similar positions
+        positions = find_similar_positions(
+            candidate_id=candidate_id,
+            db=db,
+            limit=3,
+            min_similarity=0.5  # Lower threshold for more results
+        )
+
+        # Generate explanations using LLM
+        positions_with_explanations = explain_multiple_matches(
+            candidate=candidate_dict,
+            positions_with_scores=positions
+        )
+
+        return positions_with_explanations
+
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to find similar positions: {str(e)}")

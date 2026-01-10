@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer, Text, TIMESTAMP, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from pgvector.sqlalchemy import Vector
 from .database import Base
 
 class Position(Base):
@@ -21,6 +22,8 @@ class Position(Base):
     contact_person_title = Column(String(255))
     contact_person_email = Column(String(255))
     notes = Column(Text)
+    embedding = Column(Vector(1024))
+    embedding_text = Column(Text)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 

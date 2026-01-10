@@ -33,6 +33,7 @@ from app.services.data_validator import (
     validate_personal_info, validate_experience, validate_education,
     validate_certifications, validate_languages, validate_skills
 )
+from app.services.embedding_service import generate_embedding, prepare_candidate_text
 
 # Configure logging
 logging.basicConfig(
@@ -156,6 +157,42 @@ def ingest_cv(cv_path: Path, candidate_id: Optional[str] = None) -> str:
     logger.info(f"Validation complete: {first_name} {last_name}, {len(skills)} skills, "
                 f"{len(experience)} experience entries, {len(education)} education entries")
 
+    # Step 4.5: Generate embedding
+    logger.info("Step 4.5: Generating embedding...")
+    try:
+        # Prepare candidate data for embedding
+        candidate_data = {
+            'summary': summary,
+            'skills': skills,
+            'experience': [
+                {
+                    'title': exp['title'],
+                    'company': exp['company']
+                }
+                for exp in experience
+            ],
+            'education': [
+                {
+                    'degree': edu['degree'],
+                    'field_of_study': edu.get('field_of_study')
+                }
+                for edu in education
+            ]
+        }
+
+        # Generate embedding text
+        embedding_text = prepare_candidate_text(candidate_data)
+        logger.info(f"Embedding text prepared ({len(embedding_text)} chars)")
+
+        # Generate embedding vector
+        embedding_vector = generate_embedding(embedding_text)
+        logger.info(f"Embedding generated ({len(embedding_vector)} dimensions)")
+
+    except Exception as e:
+        logger.warning(f"Failed to generate embedding: {e}. Continuing without embedding.")
+        embedding_vector = None
+        embedding_text = None
+
     # Step 5: Store in database
     logger.info("Step 5: Storing in database...")
     db = SessionLocal()
@@ -182,7 +219,9 @@ def ingest_cv(cv_path: Path, candidate_id: Optional[str] = None) -> str:
             location=personal_info.get('location'),
             linkedin=linkedin,
             github=github,
-            summary=summary
+            summary=summary,
+            embedding=embedding_vector,
+            embedding_text=embedding_text
         )
         db.add(candidate)
 
