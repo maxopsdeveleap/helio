@@ -6,9 +6,10 @@ Hellio HR is an intelligent hiring operations assistant built as part of Develea
 ## Tech Stack
 - **Backend**: FastAPI (Python 3.12), SQLAlchemy, PostgreSQL
 - **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3
-- **AI**: Claude API (Anthropic) for SQL-RAG chat
+- **AI**: Claude API (Anthropic) for SQL-RAG chat and match explanations
+- **Embeddings**: Voyage AI (voyage-2 model, 1024 dimensions)
 - **Infrastructure**: Docker Compose
-- **Database**: PostgreSQL with pgvector extension
+- **Database**: PostgreSQL with pgvector extension for vector similarity search
 
 ## Code Style & Standards
 
@@ -31,11 +32,13 @@ Hellio HR is an intelligent hiring operations assistant built as part of Develea
 hellio-hr-max/
 ├── .claude/              # Claude Code configuration
 ├── backend/
-│   └── app/
-│       ├── api/          # API endpoints (candidates, positions)
-│       ├── routers/      # Additional routers (chat)
-│       ├── models/       # SQLAlchemy models
-│       └── services/     # Business logic (LLM, SQL-RAG, validators)
+│   ├── app/
+│   │   ├── api/          # API endpoints (candidates, positions)
+│   │   ├── routers/      # Additional routers (chat)
+│   │   ├── models/       # SQLAlchemy models
+│   │   └── services/     # Business logic (LLM, SQL-RAG, embeddings, similarity, matching)
+│   ├── migrations/       # Database migrations (pgvector)
+│   └── scripts/          # Utility scripts (ingest_cv, backfill_embeddings)
 ├── data/
 │   └── candidates/       # PDF CVs for ingestion
 ├── docs/                 # Documentation
@@ -106,6 +109,14 @@ hellio-hr-max/
 - Grounding: LLM answers strictly from query results
 - Modal-based UI for seamless UX
 
+### Semantic Search (Exercise 5)
+- Vector embeddings using Voyage AI (1024 dimensions)
+- pgvector extension for similarity search using cosine distance
+- Hybrid filtering: semantic similarity + experience level matching
+- Claude Haiku generates human-readable match explanations
+- Browser SessionStorage caching for instant repeat loads
+- Bidirectional: positions suggest candidates, candidates suggest positions
+
 ### Security
 - SQL injection prevention: SELECT-only, no semicolons, forbidden keywords
 - XSS prevention: HTML escaping on frontend
@@ -124,12 +135,15 @@ hellio-hr-max/
 - **Exercise 2** (Days 3-4): FastAPI Backend
 - **Exercise 3** (Days 5-6): CV Ingestion with Claude
 - **Exercise 4** (Days 7-8): SQL-RAG Chat
+- **Exercise 5**: Semantic Candidate Search with Vector Embeddings
 
 ### 🚧 Current Status
 All exercises complete. System fully functional with:
 - Candidate/Position management
 - CV ingestion from PDFs
 - Natural language SQL chat
+- Semantic search with AI-powered matching
+- Vector embeddings and hybrid filtering
 - Modal-based UI
 
 ## User Preferences
@@ -146,11 +160,13 @@ All exercises complete. System fully functional with:
 - `GET /api/candidates/{id}` - Get candidate details
 - `PUT /api/candidates/{id}` - Update candidate
 - `POST /api/candidates/ingest` - Ingest CV from PDF
+- `GET /api/candidates/{id}/suggest-positions` - Get top 3 similar positions with AI explanations
 
 ### Positions
 - `GET /api/positions/` - List all positions
 - `GET /api/positions/{id}` - Get position details
 - `PUT /api/positions/{id}` - Update position
+- `GET /api/positions/{id}/suggest-candidates` - Get top 3 similar candidates using semantic search
 
 ### Chat
 - `POST /api/chat/ask` - Ask natural language question
@@ -161,6 +177,7 @@ All exercises complete. System fully functional with:
 # .env file
 DATABASE_URL=postgresql://user:password@db:5432/helliodb
 ANTHROPIC_API_KEY=sk-ant-...
+VOYAGE_API_KEY=pa-...  # For vector embeddings
 ```
 
 ## Database Schema
