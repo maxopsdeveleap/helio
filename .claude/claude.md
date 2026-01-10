@@ -1,7 +1,14 @@
 # Hellio HR - Claude Code Work Rules
 
 ## Project Context
-Hellio HR is an intelligent hiring operations assistant built as part of Develeap's Agenteer Boot Camp. The system helps manage candidates and job positions while keeping humans in control of hiring decisions.
+Hellio HR is an intelligent hiring operations assistant built as part of Develeap's Agenteer Boot Camp. The system helps manage candidates and job positions using a FastAPI backend, PostgreSQL database, and modern frontend with SQL-RAG chat capabilities.
+
+## Tech Stack
+- **Backend**: FastAPI (Python 3.12), SQLAlchemy, PostgreSQL
+- **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3
+- **AI**: Claude API (Anthropic) for SQL-RAG chat
+- **Infrastructure**: Docker Compose
+- **Database**: PostgreSQL with pgvector extension
 
 ## Code Style & Standards
 
@@ -12,34 +19,45 @@ Hellio HR is an intelligent hiring operations assistant built as part of Develea
 - Add comments only for complex logic, not obvious code
 - Use descriptive variable names (no single letters except loop counters)
 
-### Python (for backend in future exercises)
+### Python
 - Follow PEP 8 style guide
 - Use type hints for function parameters and returns
 - Use FastAPI best practices (dependency injection, Pydantic models)
-- Organize code: routes, services, models, utils
+- Organize code: routers, services, models, api
+- Add docstrings for public functions/classes
 
 ### File Organization
 ```
 hellio-hr-max/
-├── .claude/          # Claude Code configuration
-├── data/             # JSON data files (candidates, positions)
-├── public/           # Frontend (HTML, CSS, JS)
-├── src/              # Backend source (future exercises)
-└── tests/            # Test files (future exercises)
+├── .claude/              # Claude Code configuration
+├── backend/
+│   └── app/
+│       ├── api/          # API endpoints (candidates, positions)
+│       ├── routers/      # Additional routers (chat)
+│       ├── models/       # SQLAlchemy models
+│       └── services/     # Business logic (LLM, SQL-RAG, validators)
+├── data/
+│   └── candidates/       # PDF CVs for ingestion
+├── docs/                 # Documentation
+├── public/               # Frontend
+│   ├── css/             # Styles
+│   └── js/              # JavaScript
+└── docker-compose.yml    # Container orchestration
 ```
 
 ## Git Commit Guidelines
 - Use present tense ("Add feature" not "Added feature")
 - First line: concise summary (50 chars max)
 - Body: bullet points for multiple changes
-- No emojis or "Claude Code" attribution (as per user preference)
+- **No Claude Code attribution or emojis** (as per user preference)
 - Example:
   ```
-  Add candidate filtering by skills
+  feat: implement SQL-RAG chat with Claude API
 
-  - Implement skill-based search
-  - Update UI to show filter controls
-  - Add tests for filter logic
+  - Add schema inspector for DB context
+  - Implement SQL validator for security
+  - Create 4-step RAG pipeline
+  - Add modal chat UI
   ```
 
 ## Development Workflow
@@ -53,7 +71,7 @@ hellio-hr-max/
 - Prefer editing existing files over creating new ones
 - Keep solutions simple - avoid over-engineering
 - Don't add features not explicitly requested
-- Test changes in browser before committing
+- Test changes after implementation
 
 ### Error Handling
 - Always wrap fetch calls in try-catch
@@ -69,42 +87,50 @@ hellio-hr-max/
 - Use Grep for searching file contents
 - Avoid bash cat/grep when dedicated tools exist
 
-### Sub-Agents
-- Use for complex multi-step tasks (5+ steps)
-- Use for tasks requiring multiple file searches
-- Don't use for simple single-file operations
-- Prefer parallel agent execution when tasks are independent
-
 ### Testing
-- Always test in browser after frontend changes
-- Run python3 -m http.server 8000 to serve locally
-- Open http://localhost:8000/public/index.html
+- Backend: Run in Docker via `docker compose up`
+- Frontend: Access via http://localhost:8000/public/index.html
 - Check browser console for errors
+- Test API via http://localhost:8001/docs
 
 ## Project-Specific Rules
 
-### Data Extraction
-- Manual extraction from CVs using AI (not automated parsing)
-- Keep JSON structure consistent across all candidates/positions
-- Include all relevant fields even if some are null
+### CV Ingestion (Exercise 3)
+- Uses multimodal LLM to extract structured data from PDFs
+- Validates required fields before database insertion
+- Stores in PostgreSQL with proper relationships
 
-### UI/UX
-- Professional, clean design
-- Responsive layout (mobile-friendly)
-- Clear visual hierarchy
-- Accessible (keyboard navigation, ARIA labels)
+### SQL-RAG Chat (Exercise 4)
+- 4-step pipeline: classify → generate SQL → execute → generate answer
+- Defense-in-depth security: prompts guide, validator enforces
+- Grounding: LLM answers strictly from query results
+- Modal-based UI for seamless UX
+
+### Security
+- SQL injection prevention: SELECT-only, no semicolons, forbidden keywords
+- XSS prevention: HTML escaping on frontend
+- Read-only database user for chat queries (recommended)
 
 ### Performance
 - Lazy load large datasets
 - Minimize API calls
 - Cache data when appropriate
-- Use efficient search/filter algorithms
+- Use LIMIT in SQL queries
 
-## Bootcamp Context
-- Current exercise: Exercise 1 (Days 1-2) - COMPLETE
-- Next exercise: Exercise 2 (Days 3-4) - Backend with FastAPI
-- Learning objectives: claude.md, custom commands, MCP tools, sub-agents
-- Repository: https://github.com/maxopsdeveleap/helio
+## Bootcamp Progress
+
+### ✅ Completed Exercises
+- **Exercise 1** (Days 1-2): Candidate Management UI
+- **Exercise 2** (Days 3-4): FastAPI Backend
+- **Exercise 3** (Days 5-6): CV Ingestion with Claude
+- **Exercise 4** (Days 7-8): SQL-RAG Chat
+
+### 🚧 Current Status
+All exercises complete. System fully functional with:
+- Candidate/Position management
+- CV ingestion from PDFs
+- Natural language SQL chat
+- Modal-based UI
 
 ## User Preferences
 - User: Max (Junior DevOps at Develeap)
@@ -112,3 +138,30 @@ hellio-hr-max/
 - Wants to verify each step
 - Learning to use AI tools effectively
 - F5 doesn't work (brightness control) - use Ctrl+R to refresh browser
+
+## API Endpoints
+
+### Candidates
+- `GET /api/candidates/` - List all candidates
+- `GET /api/candidates/{id}` - Get candidate details
+- `PUT /api/candidates/{id}` - Update candidate
+- `POST /api/candidates/ingest` - Ingest CV from PDF
+
+### Positions
+- `GET /api/positions/` - List all positions
+- `GET /api/positions/{id}` - Get position details
+- `PUT /api/positions/{id}` - Update position
+
+### Chat
+- `POST /api/chat/ask` - Ask natural language question
+- `GET /api/chat/examples` - Get example questions
+
+## Environment Variables
+```bash
+# .env file
+DATABASE_URL=postgresql://user:password@db:5432/helliodb
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+## Database Schema
+See `docs/database_schema.md` for complete schema documentation.
