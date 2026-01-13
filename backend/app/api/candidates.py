@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+from pathlib import Path
+import tempfile
+import os
 from app.models import get_db
 from app.models.candidate import Candidate, CandidateSkill, CandidateExperience, CandidateEducation, CandidateCertification, CandidateLanguage
 from app.schemas.candidate import CandidateResponse, CandidateCreate, CandidateUpdate
@@ -160,3 +163,86 @@ async def suggest_positions_for_candidate(candidate_id: str, db: Session = Depen
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to find similar positions: {str(e)}")
+
+
+@router.post("/ingest", response_model=dict, status_code=201)
+async def ingest_candidate_cv(
+    file: UploadFile = File(...),
+    name: str = Form(...),
+    email: str = Form(...),
+    position_id: Optional[int] = Form(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Ingest a candidate's CV and create candidate profile.
+
+    Reuses Exercise 3 CV ingestion logic.
+    """
+    # Import here to avoid circular dependencies
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
+    from ingest_cv import ingest_cv
+
+    # Save uploaded file to temp location
+    with tempfile.NamedTemporaryFile(delete=False, suffix=Path(file.filename).suffix) as tmp_file:
+        content = await file.read()
+        tmp_file.write(content)
+        tmp_path = Path(tmp_file.name)
+
+    try:
+        # Ingest CV using Exercise 3 logic
+        is_duplicate = False
+        try:
+            candidate_id = ingest_cv(tmp_path)
+        except Exception as ingest_error:
+            # Check if this is a duplicate candidate error
+            error_msg = str(ingest_error)
+            if "duplicate key value violates unique constraint" in error_msg or "UniqueViolation" in error_msg:
+                # Extract email from error message
+                import re
+                email_match = re.search(r'Key \(email\)=\(([^)]+)\)', error_msg)
+                duplicate_email = email_match.group(1) if email_match else email
+
+                # Find existing candidate by email
+                candidate = db.query(Candidate).filter(Candidate.email == duplicate_email).first()
+                if candidate:
+                    candidate_id = candidate.id
+                    is_duplicate = True
+                else:
+                    raise ingest_error
+            else:
+                raise ingest_error
+
+        # Get created candidate
+        candidate = db.query(Candidate).filter(Candidate.id == candidate_id).first()
+        if not candidate:
+            raise HTTPException(status_code=500, detail="Candidate created but not found")
+
+        # Always get position matches (regardless of position_id)
+        position_matches = []
+        from app.services.similarity_service import find_similar_positions
+        try:
+            position_matches = find_similar_positions(
+                candidate_id=candidate_id,
+                db=db,
+                limit=3,
+                min_similarity=0.5
+            )
+        except Exception as e:
+            # Don't fail if matching fails
+            pass
+
+        return {
+            "candidate_id": candidate_id,
+            "candidate": format_candidate_response(candidate),
+            "position_matches": position_matches,
+            "message": f"Candidate already exists - retrieved existing profile" if is_duplicate else f"Candidate {name} ingested successfully",
+            "duplicate": is_duplicate
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to ingest CV: {str(e)}")
+    finally:
+        # Clean up temp file
+        if tmp_path.exists():
+            os.unlink(tmp_path)

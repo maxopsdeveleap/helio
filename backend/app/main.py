@@ -38,9 +38,10 @@ async def health_check():
     return {"status": "ok"}
 
 # Import and include routers
-from app.api import candidates, positions
+from app.api import candidates, positions, notifications
 from app.routers import chat
 
 app.include_router(candidates.router, prefix="/api/candidates", tags=["Candidates"])
 app.include_router(positions.router, prefix="/api/positions", tags=["Positions"])
+app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
 app.include_router(chat.router, tags=["Chat"])

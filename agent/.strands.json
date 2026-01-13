@@ -1,0 +1,13 @@
+{
+  "mcp_servers": {
+    "gmail": {
+      "command": "uv",
+      "args": ["run", "mcp", "run", "mcp_gmail/server.py"],
+      "cwd": "/home/develeap/mcp-gmail",
+      "env": {
+        "MCP_GMAIL_CREDENTIALS_PATH": "/home/develeap/mcp-gmail/credentials.json",
+        "MCP_GMAIL_TOKEN_PATH": "/home/develeap/mcp-gmail/token.json"
+      }
+    }
+  }
+}

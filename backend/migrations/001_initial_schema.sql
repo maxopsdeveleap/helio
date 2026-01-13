@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS candidate_certifications (
     id SERIAL PRIMARY KEY,
     candidate_id VARCHAR(50) NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
-    issuer VARCHAR(255) NOT NULL,
+    issuer VARCHAR(255),  -- Nullable: LLM may not always extract issuer from CV
     year INTEGER
 );
 

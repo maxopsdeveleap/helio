@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+from pydantic import BaseModel
 from app.models import get_db
 from app.models.position import Position, PositionRequirement, PositionResponsibility, PositionSkill, CandidatePosition
 from app.models.candidate import Candidate
@@ -8,6 +9,13 @@ from app.schemas.position import PositionResponse, PositionCreate, PositionUpdat
 from app.services.similarity_service import find_similar_candidates
 
 router = APIRouter()
+
+# Request model for position ingestion from email
+class PositionIngestRequest(BaseModel):
+    title: str
+    description: str
+    company: str = "Hellio"
+    hiring_manager_email: Optional[str] = None
 
 def format_position_response(position: Position) -> dict:
     """Convert database position to JSON format matching Exercise 1"""
@@ -212,3 +220,108 @@ async def get_position_candidates(position_id: str, db: Session = Depends(get_db
             })
 
     return result
+
+@router.post("/ingest")
+async def ingest_position_from_email(
+    request: PositionIngestRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Ingest a position from email text using LLM to parse details.
+    Used by the agent when processing position emails.
+    """
+    from app.services.llm_service import parse_position_details
+    from app.services.embedding_service import generate_embedding
+    import uuid
+
+    # Generate position ID
+    # Count existing positions to get next number
+    count = db.query(Position).count()
+    position_id = f"position_{str(count + 1).zfill(3)}"
+
+    # Use LLM to parse position details
+    try:
+        parsed = parse_position_details(request.title, request.description)
+        print(f"LLM parsed result: {parsed}")  # Debug logging
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to parse position: {str(e)}")
+
+    # Validate required fields
+    required_fields = ['title', 'summary', 'requirements', 'responsibilities']
+    missing_fields = [field for field in required_fields if field not in parsed]
+    if missing_fields:
+        raise HTTPException(status_code=500, detail=f"LLM response missing fields: {missing_fields}. Got: {list(parsed.keys())}")
+
+    # Generate embedding for semantic search
+    embedding_text = f"{parsed['title']} {parsed['summary']} {' '.join(parsed['requirements'])} {' '.join(parsed['responsibilities'])}"
+    try:
+        embedding = generate_embedding(embedding_text)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate embedding: {str(e)}")
+    
+    # Create position
+    position = Position(
+        id=position_id,
+        title=parsed['title'],
+        company=request.company,
+        location=parsed.get('location', 'Tel Aviv, Israel'),
+        work_arrangement=parsed.get('work_arrangement', 'Hybrid'),
+        experience=parsed.get('experience', '2-5 years'),
+        description=parsed['summary'],  # Use 'description' field, not 'summary'
+        urgency=parsed.get('urgency', 'Medium'),
+        status='Open',
+        embedding=embedding,
+        embedding_text=embedding_text
+    )
+    
+    db.add(position)
+    db.flush()
+    
+    # Add requirements
+    for idx, req in enumerate(parsed['requirements']):
+        requirement = PositionRequirement(
+            position_id=position_id,
+            requirement=req,
+            is_required=idx < len(parsed['requirements']) // 2,  # First half are required
+            order_index=idx
+        )
+        db.add(requirement)
+    
+    # Add responsibilities
+    for idx, resp in enumerate(parsed['responsibilities']):
+        responsibility = PositionResponsibility(
+            position_id=position_id,
+            responsibility=resp,
+            order_index=idx
+        )
+        db.add(responsibility)
+    
+    # Add skills
+    for skill in parsed.get('skills', []):
+        skill_obj = PositionSkill(
+            position_id=position_id,
+            skill_name=skill  # Field is 'skill_name' not 'skill'
+        )
+        db.add(skill_obj)
+    
+    db.commit()
+    db.refresh(position)
+    
+    # Find matching candidates
+    matching_candidates = []
+    try:
+        matching_candidates = find_similar_candidates(
+            position_id=position_id,
+            db=db,
+            limit=5,
+            min_similarity=0.5
+        )
+    except Exception:
+        pass  # Don't fail if matching fails
+    
+    return {
+        "position_id": position_id,
+        "position": format_position_response(position),
+        "matching_candidates": matching_candidates,
+        "message": f"Position '{parsed['title']}' created successfully"
+    }
