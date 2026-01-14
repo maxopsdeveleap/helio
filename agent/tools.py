@@ -130,23 +130,14 @@ def build_notification_actions(
     actions = []
 
     if draft_email_id:
-        # View draft in Gmail
+        # Single button to review and send draft in Gmail
+        # User can edit, send, or discard in Gmail interface
         actions.append({
-            "label": "View Draft Email",
+            "label": "Review & Send Draft",
             "url": f"https://mail.google.com/mail/#drafts?compose={draft_email_id}",
             "type": "gmail_draft",
             "icon": "📧",
-            "primary": False
-        })
-
-        # Quick send action (would need backend implementation)
-        actions.append({
-            "label": "Send Email",
-            "url": f"{frontend_base_url}/api/send-draft/{draft_email_id}",
-            "type": "gmail_send",
-            "icon": "✉️",
-            "primary": True,
-            "confirm": "Are you sure you want to send this email?"
+            "primary": True  # Primary action - gives user full control in Gmail
         })
 
     if candidate_id:

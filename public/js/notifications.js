@@ -53,8 +53,6 @@ const NotificationManager = {
         try {
             const response = await fetch(this.apiUrl);
             const notifications = await response.json();
-            console.log('LOADED NOTIFICATIONS:', notifications);
-            console.log('First notification metadata:', notifications[0]?.metadata);
             this.renderNotifications(notifications);
             this.updateBadge(notifications);
         } catch (error) {
@@ -116,7 +114,6 @@ const NotificationManager = {
     },
 
     renderActionButtons(actionButtons) {
-        console.log('Action buttons:', actionButtons); // Debug
         if (!actionButtons || actionButtons.length === 0) {
             return '';
         }
@@ -168,10 +165,18 @@ const NotificationManager = {
                 // Navigate within app
                 if (url.includes('/candidates/')) {
                     const candidateId = url.split('/candidates/')[1];
-                    if (window.viewCandidateProfile) {
-                        this.closePanel();
-                        window.viewCandidateProfile(candidateId);
+                    this.closePanel();
+                    // Switch to candidates view
+                    const candidatesBtn = document.querySelector('[data-view="candidates"]');
+                    if (candidatesBtn) {
+                        candidatesBtn.click();
                     }
+                    // Wait a bit for the view to load, then show the candidate
+                    setTimeout(() => {
+                        if (window.showCandidateProfile) {
+                            window.showCandidateProfile(candidateId);
+                        }
+                    }, 100);
                 } else if (url.includes('/positions/')) {
                     const positionId = url.split('/positions/')[1];
                     this.closePanel();
