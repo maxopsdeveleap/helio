@@ -8,6 +8,10 @@
         "MCP_GMAIL_CREDENTIALS_PATH": "/home/develeap/mcp-gmail/credentials.json",
         "MCP_GMAIL_TOKEN_PATH": "/home/develeap/mcp-gmail/token.json"
       }
+    },
+    "hr-templates": {
+      "transport": "sse",
+      "url": "http://localhost:8002/sse"
     }
   }
 }

@@ -1,0 +1,14 @@
+name: interview_invitation
+description: "Invitation to interview with scheduling details"
+required_fields:
+  - candidate_name
+  - position_title
+  - interview_date
+  - interview_time
+  - interview_duration
+  - interviewer_name
+  - sender_name
+optional_fields:
+  - interview_location
+  - video_meeting_link
+  - preparation_instructions

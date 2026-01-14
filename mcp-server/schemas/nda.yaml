@@ -1,0 +1,11 @@
+name: nda
+description: "Non-Disclosure Agreement for interview candidates"
+required_fields:
+  - candidate_name
+  - candidate_address
+  - effective_date
+  - company_name
+  - sender_name
+optional_fields:
+  - specific_project_details
+  - expiration_date

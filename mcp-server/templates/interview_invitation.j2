@@ -1,0 +1,32 @@
+Subject: Interview Invitation - {{ position_title }} at Hellio
+
+Dear {{ candidate_name }},
+
+Thank you for your application for the {{ position_title }} position! We were impressed by your background and would like to invite you for an interview.
+
+**Interview Details:**
+- Date: {{ interview_date }}
+- Time: {{ interview_time }}
+- Duration: {{ interview_duration }}
+- Interviewer: {{ interviewer_name }}
+{% if video_meeting_link %}
+- Video Meeting Link: {{ video_meeting_link }}
+{% elif interview_location %}
+- Location: {{ interview_location }}
+{% endif %}
+{% if preparation_instructions %}
+
+**Preparation:**
+{{ preparation_instructions }}
+{% endif %}
+
+**What to Expect:**
+During the interview, we'll discuss your experience, the role requirements, and answer any questions you have about Hellio and the position.
+
+Please confirm your availability by replying to this email. If this time doesn't work for you, let us know your availability and we'll do our best to accommodate.
+
+Looking forward to speaking with you!
+
+Best regards,
+{{ sender_name }}
+Hellio HR Team

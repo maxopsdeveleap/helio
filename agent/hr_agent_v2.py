@@ -14,6 +14,7 @@ from mcp import stdio_client, StdioServerParameters
 from strands import Agent
 from strands.tools.mcp import MCPClient
 from strands.models.anthropic import AnthropicModel
+import httpx
 
 # Load environment
 env_path = Path(__file__).parent / '.env'
@@ -61,8 +62,10 @@ Process incoming emails for candidate applications and job postings following HR
      * Backend returns: candidate_id, candidate object (with first_name, last_name from CV), position_matches
      * IMPORTANT: Use candidate.first_name and candidate.last_name from the response (NOT sender name)
      * Assess match quality (strong/potential/weak)
-     * Draft appropriate response (Template B4 strong / B5 potential / B6 weak)
-     * If strong match: Draft notification to hiring manager (Template B8)
+     * Draft appropriate response using MCP templates:
+       - For ANY candidate: Use fill_template("rejection_email", {candidate_name, position_title, sender_name, feedback, encourage_reapply})
+       - Customize feedback field based on match quality (strong/potential/weak)
+     * If strong match: Consider drafting offer letter using fill_template("offer_letter", {...})
      * create_notification using ACTUAL candidate name from CV: "Candidate ingested: {candidate.first_name} {candidate.last_name}"
      * IMPORTANT: Include action buttons in metadata using build_notification_actions():
        metadata = {
@@ -72,7 +75,7 @@ Process incoming emails for candidate applications and job postings following HR
          ...other metadata...
        }
    - If download fails (no attachment found):
-     * Draft request email using Template B1 (asking for CV)
+     * Draft request email (simple text or use templates)
      * create_notification about missing CV with action buttons
 5. record_processed_email(email_id, "candidate", action)
 6. Mark email as read: mark_message_read(message_id)
@@ -128,8 +131,15 @@ Process incoming emails for candidate applications and job postings following HR
 You have:
 - Gmail tools via MCP: search_emails, get_emails, compose_email, mark_message_read
 - Database: check_email_processed, record_processed_email, create_notification
-- Templates: get_email_template(code) - returns templates A1-A3, B1-B8
+- HR Templates via MCP: list_templates(), get_template_schema(template_name), fill_template(template_name, field_values)
+  * Use these instead of get_email_template for professional, standardized documents
+  * Available templates: offer_letter, rejection_email, interview_invitation, nda
 - Backend API calls (through tools)
+
+**Template Usage:**
+1. Call list_templates() to see available templates
+2. Call get_template_schema("template_name") to see required fields
+3. Call fill_template("template_name", {field: value, ...}) to generate document
 
 Start by searching for unread emails in the inbox.
 """
@@ -147,16 +157,28 @@ def main():
         )
     ))
 
+    # Create MCP client for HR Templates (SSE transport)
+    # Note: MCPClient with URL will use SSE automatically
+    from mcp.client.sse import sse_client as create_sse_client
+
+    templates_mcp = MCPClient(
+        lambda: create_sse_client("http://localhost:8002/sse")
+    )
+
     print("🤖 Hellio HR Agent starting...")
     print("📧 Connecting to Gmail via MCP...")
+    print("📄 Connecting to HR Templates MCP...")
     print("⚠️  Human-in-the-loop: All emails require approval\n")
 
-    # Use MCP client in context manager
+    # Use MCP clients in context manager
     try:
-        with gmail_mcp:
-            # Get Gmail tools from MCP
+        with gmail_mcp, templates_mcp:
+            # Get tools from both MCP servers
             gmail_tools = gmail_mcp.list_tools_sync()
             print(f"✅ Connected to Gmail MCP ({len(gmail_tools)} tools available)")
+
+            template_tools = templates_mcp.list_tools_sync()
+            print(f"✅ Connected to HR Templates MCP ({len(template_tools)} tools available)")
 
             # Custom tools
             custom_tools = [
@@ -164,14 +186,14 @@ def main():
                 record_processed_email,
                 create_notification,
                 build_notification_actions,
-                get_email_template,
+                get_email_template,  # Keep for backward compatibility
                 download_gmail_attachment,
                 ingest_candidate_from_gmail,
                 ingest_position_from_email,
             ]
 
-            # Combine all tools
-            all_tools = gmail_tools + custom_tools
+            # Combine all tools (Gmail + Templates + Custom)
+            all_tools = gmail_tools + template_tools + custom_tools
 
             # Configure Anthropic model
             model = AnthropicModel(

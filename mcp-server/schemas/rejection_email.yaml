@@ -1,0 +1,9 @@
+name: rejection_email
+description: "Polite rejection email for candidates not selected"
+required_fields:
+  - candidate_name
+  - position_title
+  - sender_name
+optional_fields:
+  - feedback
+  - encourage_reapply

@@ -1,0 +1,21 @@
+Subject: Thank You for Your Application - {{ position_title }}
+
+Dear {{ candidate_name }},
+
+Thank you for your interest in the {{ position_title }} position at Hellio and for taking the time to interview with our team.
+
+After careful consideration, we have decided to move forward with other candidates whose backgrounds more closely align with the specific requirements for this role.
+{% if feedback %}
+
+{{ feedback }}
+{% endif %}
+{% if encourage_reapply %}
+
+We encourage you to check our careers page regularly for new opportunities that may be a better fit for your skills and experience. We'll keep your CV on file for 6 months.
+{% endif %}
+
+We appreciate your interest in Hellio and wish you the best in your job search.
+
+Best regards,
+{{ sender_name }}
+Hellio HR Team

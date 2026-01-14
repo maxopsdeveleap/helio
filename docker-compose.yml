@@ -45,6 +45,22 @@ services:
       - hellio_network
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
+  mcp-server:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    container_name: hellio_mcp_server
+    environment:
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./mcp-server/templates:/app/templates
+      - ./mcp-server/schemas:/app/schemas
+    restart: on-failure
+    networks:
+      - hellio_network
+
 volumes:
   postgres_data:
     driver: local

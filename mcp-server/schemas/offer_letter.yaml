@@ -1,0 +1,13 @@
+name: offer_letter
+description: "Standard job offer letter for successful candidates"
+required_fields:
+  - candidate_name
+  - position_title
+  - salary
+  - start_date
+  - manager_name
+  - sender_name
+optional_fields:
+  - benefits_summary
+  - equity_details
+  - work_location
