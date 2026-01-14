@@ -1,0 +1,26 @@
+Dear {{ hiring_manager_name }},
+
+Thank you for submitting the job posting for the {{ position_title }} position at {{ company_name }}.
+
+We have successfully received your position details and our HR team is reviewing the requirements. Here's a summary of what we received:
+
+**Position:** {{ position_title }}
+**Company:** {{ company_name }}
+{% if location %}**Location:** {{ location }}{% endif %}
+{% if salary_range %}**Compensation:** {{ salary_range }}{% endif %}
+
+**Next Steps:**
+1. Our system will automatically search for qualified candidates matching your requirements
+2. You'll receive candidate recommendations within 24-48 hours
+3. We'll send you a notification when potential matches are found
+
+{% if additional_notes %}
+**Additional Notes:**
+{{ additional_notes }}
+{% endif %}
+
+If you need to make any changes to the position details or have questions, please don't hesitate to reach out.
+
+Best regards,
+{{ sender_name }}
+Hellio HR Team

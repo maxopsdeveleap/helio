@@ -1,0 +1,11 @@
+name: position_confirmation
+description: Confirmation email to hiring manager when a new position is received
+required_fields:
+  - hiring_manager_name
+  - position_title
+  - company_name
+  - sender_name
+optional_fields:
+  - location
+  - salary_range
+  - additional_notes
