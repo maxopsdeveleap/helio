@@ -11,7 +11,11 @@ Hellio HR is an intelligent hiring operations assistant built as part of Develea
 - **Infrastructure**: Docker Compose
 - **Database**: PostgreSQL with pgvector extension for vector similarity search
 - **Agent Framework**: Strands Agents SDK (v1.21.0) for autonomous workflows
-- **MCP**: Gmail MCP server for email integration
+- **MCP Servers**:
+  - Gmail MCP server for email integration (stdio transport)
+  - HR Templates MCP server for document generation (SSE transport, port 8002)
+- **Template Engine**: Jinja2 for HR document templates
+- **MCP Framework**: FastMCP for simplified MCP server development
 
 ## Code Style & Standards
 
@@ -33,9 +37,13 @@ Hellio HR is an intelligent hiring operations assistant built as part of Develea
 ```
 hellio-hr-max/
 ├── .claude/              # Claude Code configuration
+├── agent/
+│   ├── .strands.json    # MCP server configuration (Gmail, HR Templates)
+│   ├── hr_agent_v2.py   # Main Strands agent with MCP integration
+│   └── tools.py         # Custom tools (DB, backend API)
 ├── backend/
 │   ├── app/
-│   │   ├── api/          # API endpoints (candidates, positions)
+│   │   ├── api/          # API endpoints (candidates, positions, notifications)
 │   │   ├── routers/      # Additional routers (chat)
 │   │   ├── models/       # SQLAlchemy models
 │   │   └── services/     # Business logic (LLM, SQL-RAG, embeddings, similarity, matching)
@@ -44,10 +52,16 @@ hellio-hr-max/
 ├── data/
 │   └── candidates/       # PDF CVs for ingestion
 ├── docs/                 # Documentation
+├── mcp-server/           # HR Templates MCP Server (Exercise 7)
+│   ├── templates/        # Jinja2 templates (offer_letter, rejection_email, etc.)
+│   ├── schemas/          # YAML schemas defining template fields
+│   ├── server.py         # FastMCP server implementation
+│   ├── Dockerfile        # Container for MCP server
+│   └── pyproject.toml    # Dependencies (fastmcp, jinja2, pyyaml)
 ├── public/               # Frontend
 │   ├── css/             # Styles
-│   └── js/              # JavaScript
-└── docker-compose.yml    # Container orchestration
+│   └── js/              # JavaScript (notifications.js for agent alerts)
+└── docker-compose.yml    # Container orchestration (backend, postgres, mcp-server)
 ```
 
 ## Git Commit Guidelines
@@ -139,9 +153,10 @@ hellio-hr-max/
 - **Exercise 4** (Days 7-8): SQL-RAG Chat
 - **Exercise 5**: Semantic Candidate Search with Vector Embeddings
 - **Exercise 6**: Intelligent HR Agent with Strands
+- **Exercise 7**: MCP Server for HR Document Templates
 
 ### 🚧 Current Status
-All exercises through 6 complete. System fully functional with:
+All exercises through 7 complete. System fully functional with:
 - Candidate/Position management
 - CV ingestion from PDFs
 - Natural language SQL chat
@@ -150,6 +165,10 @@ All exercises through 6 complete. System fully functional with:
 - Modal-based UI
 - Autonomous HR agent with Gmail integration
 - Human-in-the-loop notification system
+- MCP server for professional HR document generation
+
+### 📋 Next Up
+- **Exercise 8**: Migration to AWS AgentCore (production deployment)
 
 ### HR Agent (Exercise 6)
 - **Agent Framework**: Strands Agents SDK for autonomous workflows
@@ -171,21 +190,54 @@ All exercises through 6 complete. System fully functional with:
   - Avoids reprocessing duplicate emails
 - **File Storage**: CVs stored in `/tmp/` (temporary, works for dev/testing)
 
-## Future Improvements
+### MCP Server for HR Templates (Exercise 7)
+- **Framework**: FastMCP (simplified MCP server development)
+- **Transport**: SSE (Server-Sent Events) on port 8002
+- **Purpose**: Provides reusable HR document templates to any MCP-compatible agent
+- **Templates** (Jinja2 with variable substitution):
+  - `offer_letter.j2` - Job offer with salary, benefits, start date
+  - `rejection_email.j2` - Candidate rejection with optional feedback
+  - `interview_invitation.j2` - Interview scheduling details
+  - `nda.j2` - Non-disclosure agreement for candidates
+  - `position_confirmation.j2` - Confirmation to hiring manager when position received
+- **MCP Tools**:
+  - `list_templates()` - Returns all available templates with descriptions
+  - `get_template_schema(template_name)` - Returns required/optional fields for a template
+  - `fill_template(template_name, field_values)` - Generates filled document from template
+- **Schema Files**: YAML files define required/optional fields for each template
+- **Integration**: Agent connects via `.strands.json` configuration, loads tools at startup
+- **Dockerized**: Runs as separate container in docker-compose
+- **Benefits**:
+  - Agent uses professional, standardized templates instead of hardcoded text
+  - Templates can be updated without changing agent code
+  - Demonstrates MCP server creation and integration
+  - Educational: shows when to use MCP vs direct function calls
+
+## Known Issues & Future Improvements
+
+### 🚨 Critical Issues
+1. **Backend API Credits Exhausted**
+   - **Issue**: `ingest_position_from_email` endpoint failing with "credit balance too low"
+   - **Cause**: Backend uses Anthropic API to parse unstructured position emails into structured data
+   - **Impact**: Agent cannot automatically create positions from emails (falls back to manual draft)
+   - **Fix**: Add credits to Anthropic account or update `ANTHROPIC_API_KEY` environment variable
+   - **File**: `backend/app/services/llm_service.py` (line 19: `parse_position_details()`)
+
+2. **Port 8000 Conflict**
+   - **Issue**: Python HTTP server blocking port 8000 (PID 86830)
+   - **Impact**: Backend runs on port 8001 instead of 8000
+   - **Fix**: Kill process `kill 86830` or use port 8001 consistently
+   - **Status**: Working around it (backend on 8001, BACKEND_URL correctly set)
 
 ### High Priority
-1. **Proper CV Storage**
+3. **Proper CV Storage**
    - Create dedicated storage directory: `/home/develeap/hellio-hr-max/storage/cvs/`
    - Organize by date or candidate ID (e.g., `2026-01/candidate_001.pdf`)
    - Set proper file permissions (read-only for web server)
    - Add CV preview links in notifications
    - Consider S3/cloud storage for production
 
-2. **Clean Debug Logs**
-   - Remove `console.log` statements from notifications.js (lines 56-57, 117)
-   - Keep only essential error logging
-
-3. **Fix Duplicate Position Issue**
+4. **Fix Duplicate Position Issue**
    - Delete duplicate Junior SRE position (position_005)
    - Agent should check for existing positions before creating
 
@@ -255,11 +307,19 @@ All exercises through 6 complete. System fully functional with:
 
 ## Environment Variables
 ```bash
-# .env file
+# .env file (docker-compose.yml pulls from these)
 DATABASE_URL=postgresql://user:password@db:5432/helliodb
-ANTHROPIC_API_KEY=sk-ant-...
-VOYAGE_API_KEY=pa-...  # For vector embeddings
+ANTHROPIC_API_KEY=sk-ant-...  # Used by backend for LLM parsing (currently out of credits!)
+VOYAGE_API_KEY=pa-...         # For vector embeddings
 ```
+
+## Ports & Services
+- **Frontend**: http://localhost:8000/public/index.html (served by Python HTTP server on 8000)
+- **Backend API**: http://localhost:8001 (FastAPI, container port 8000 mapped to host 8001)
+- **Backend Docs**: http://localhost:8001/docs (Swagger UI)
+- **MCP Server**: http://localhost:8002/sse (HR Templates MCP, SSE transport)
+- **PostgreSQL**: localhost:5432 (exposed for local connections)
+- **Agent**: Runs via `uv run agent/hr_agent_v2.py` (not containerized yet)
 
 ## Database Schema
 See `docs/database_schema.md` for complete schema documentation.
